@@ -1,0 +1,5 @@
+# https://github.com/halcy/Mastodon.py/pull/223
+mastodon.py @ git+https://github.com/animeavi/Mastodon.py.git@file_name
+Wand
+pytoml
+timecard-cli @ git+https://github.com/ioistired/timecard-cli.git

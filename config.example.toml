@@ -1,0 +1,5 @@
+[creds]
+access_token = '...'
+client_id = '...'
+client_secret = '...'
+api_base_url = 'https://csdisaster.club'

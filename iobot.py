@@ -20,6 +20,11 @@ def command(func):
 	commands[func.__name__.replace('_', '-')] = func
 	return func
 
+def reply(notif, *args, **kwargs):
+	if notif['status']['visibility'] in {'public', 'unlisted'}:
+		kwargs['visibility'] = 'unlisted'
+	return pleroma.status_post(*args, in_reply_to_id=notif['status'], **kwargs)
+
 def handle(notif):
 	content = notif['status']['pleroma']['content']['text/plain']
 	before, mention, command = content.partition('@iobot')
@@ -34,7 +39,7 @@ def handle(notif):
 
 @command
 def ping(notif, *_):
-	pleroma.status_post('pong', in_reply_to_id=notif['status'])
+	reply(notif, 'pong')
 
 def main():
 	while True:

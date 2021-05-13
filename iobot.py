@@ -7,6 +7,7 @@ import time
 import requests
 import wand.image
 import io
+from bs4 import BeautifulSoup
 
 from memes.this_your_admin import this_your_admin as _this_your_admin
 
@@ -22,19 +23,56 @@ def command(func):
 	commands[func.__name__.replace('_', '-')] = func
 	return func
 
-def reply(notif, *args, **kwargs):
+def reply(notif, status, **kwargs):
 	if notif['status']['visibility'] in {'public', 'unlisted'}:
 		kwargs['visibility'] = 'unlisted'
-	return pleroma.status_post(*args, in_reply_to_id=notif['status'], **kwargs)
+	mentions = [notif['account']['acct']]
+	for mention in notif['status']['mentions']:
+		if mention['acct'] != me['acct']:
+			mentions.append(mention['acct'])
+	return pleroma.status_post(
+		''.join('@' + mention + ' ' for mention in mentions) + status,
+		in_reply_to_id=notif['status'],
+		**kwargs,
+	)
+
+def html_to_plain(content):
+	soup = BeautifulSoup(content, 'html.parser')
+	for br in soup.find_all('br'):
+		br.replace_with('\n')
+	return soup.text
+
+def parse_mentions(content):
+	"""'@a @b @bot @c ping pong' -> ['ping', 'pong']
+
+	'@a @b @c foo bar
+	@bot quux garply'
+	-> ['quux', 'garply']
+	"""
+	command_content = []
+	in_mentions_block = False
+	has_me = False
+	for word in html_to_plain(content).split():
+		if command_content and not in_mentions_block and word.startswith('@'):
+			break
+		if word == '@' + me['acct']:
+			has_me = True
+			in_mentions_block = True
+		if word.startswith('@') and not in_mentions_block and word != '@' + me['acct']:
+			in_mentions_block = True
+			has_me = False
+		if not word.startswith('@'):
+			in_mentions_block = False
+		if has_me and not in_mentions_block:
+			command_content.append(word)
+
+	return command_content
 
 def handle(notif):
-	content = notif['status']['pleroma']['content']['text/plain']
-	before, mention, command = content.partition('@' + me['acct'])
-	command = command.strip()
 	try:
-		command_name, *command_args = command.split()
+		command_name, *command_args = parse_mentions(notif['status']['content'])
 	except ValueError:
-		return reply(notif, 'Error: you must specify a command. List of commands: ' + ", ".join(commands))
+		return reply(notif, 'Error: you must specify a command. List of commands: ' + ', '.join(commands))
 
 	try:
 		command_handler = commands[command_name]

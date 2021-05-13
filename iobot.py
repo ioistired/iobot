@@ -214,7 +214,8 @@ def main():
 		notifs = pleroma.notifications(mentions_only=True)
 		for notif in notifs:
 			dispatch(notif)
-		pleroma.notifications_clear()
+		if notifs:
+			pleroma.notifications_clear()
 
 		time.sleep(1)
 

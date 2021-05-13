@@ -31,7 +31,11 @@ def handle(notif):
 	content = notif['status']['pleroma']['content']['text/plain']
 	before, mention, command = content.partition('@' + me['acct'])
 	command = command.strip()
-	command_name, *command_args = command.split()
+	try:
+		command_name, *command_args = command.split()
+	except ValueError:
+		return reply(notif, 'Error: you must specify a command. List of commands: ' + ", ".join(commands))
+
 	try:
 		command_handler = commands[command_name]
 	except KeyError:

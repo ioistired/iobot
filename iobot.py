@@ -72,7 +72,7 @@ def handle(notif):
 	try:
 		command_name, *command_args = parse_mentions(notif['status']['content'])
 	except ValueError:
-		return reply(notif, 'Error: you must specify a command. List of commands: ' + ', '.join(commands))
+		return
 
 	try:
 		command_handler = commands[command_name]

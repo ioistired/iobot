@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import contextlib
 import pytoml as toml
 import traceback
 import mastodon
@@ -137,6 +138,7 @@ def timecard(notif, *args):
 	reply(notif, '', media_ids=[media])
 
 def main():
+	print('Logged in as:', '@' + me['acct'])
 	while True:
 		notifs = pleroma.notifications(mentions_only=True)
 		for notif in notifs:
@@ -146,4 +148,5 @@ def main():
 		time.sleep(1)
 
 if __name__ == '__main__':
-	main()
+	with contextlib.suppress(KeyboardInterrupt):
+		main()

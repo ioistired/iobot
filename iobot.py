@@ -38,6 +38,18 @@ def reply(notif, status, **kwargs):
 		**kwargs,
 	)
 
+def get_image(status):
+	def get_attach(status):
+		attachments = status['media_attachments']
+		for attach in attachments:
+			if attach['pleroma']['mime_type'].startswith('image/'):
+				return attach
+
+	return (
+		get_attach(status)
+		or next(filter(None, map(get_attach, pleroma.status_context(status['id'])['ancestors'])), None)
+	)
+
 def html_to_plain(content):
 	soup = BeautifulSoup(content, 'html.parser')
 	for br in soup.find_all('br'):
@@ -89,13 +101,10 @@ def ping(notif, *_):
 
 @command
 def this_your_admin(notif, *_):
-	attachments = notif['status']['media_attachments']
-	if len(attachments) != 1:
-		return reply(notif, 'Error: please attach exactly one image file.')
+	attach = get_image(notif['status'])
+	if not attach:
+		return reply(notif, 'Error: no image found attached to your message or in this thread.')
 
-	attach = attachments[0]
-	if not attach['pleroma']['mime_type'].startswith('image/'):
-		return reply(notif, 'Error: an image file is required, got ' + attach['pleroma']['mime_type'])
 	with (
 		requests.get(attach['url']) as resp,
 		wand.image.Image(blob=resp.content) as img,

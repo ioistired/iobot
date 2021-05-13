@@ -7,6 +7,7 @@ import time
 import requests
 import wand.image
 import io
+import shlex
 from bs4 import BeautifulSoup
 
 from memes.this_your_admin import this_your_admin as _this_your_admin
@@ -52,7 +53,7 @@ def parse_mentions(content):
 	command_content = []
 	in_mentions_block = False
 	has_me = False
-	for word in html_to_plain(content).split():
+	for word in shlex.split(html_to_plain(content)):
 		if command_content and not in_mentions_block and word.startswith('@'):
 			break
 		if word == '@' + me['acct']:

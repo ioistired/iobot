@@ -11,6 +11,7 @@ import shlex
 from bs4 import BeautifulSoup
 
 from memes.this_your_admin import this_your_admin as _this_your_admin
+from timecard import timecard as _timecard
 
 with open('config.toml') as f:
 	config = toml.load(f)
@@ -104,6 +105,18 @@ def this_your_admin(notif, *_):
 		out.save(outf)
 		media = pleroma.media_post(outf.getbuffer(), mime_type='image/png', file_name='this_your_admin.png')
 		reply(notif, '', media_ids=[media])
+
+@command
+def timecard(notif, *args):
+	outf = io.BytesIO()
+	_timecard(args, file=outf)
+	media = pleroma.media_post(
+		outf.getbuffer(),
+		mime_type='image/png',
+		file_name='timecard.png',
+		description='\n'.join(args),
+	)
+	reply(notif, '', media_ids=[media])
 
 def main():
 	while True:

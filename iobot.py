@@ -10,6 +10,7 @@ import wand.image
 import io
 import shlex
 import re
+import inspect
 from bs4 import BeautifulSoup
 
 from memes.this_your_admin import this_your_admin as _this_your_admin
@@ -170,7 +171,9 @@ def command_format(*_):
 
 NON_LINK_AT_SIGN = re.compile('(?<!/)@')
 
-def sanitize_docs(docs):
+def prepare_docs(docs):
+	docs = docs.format(username=me['acct'])
+	docs = inspect.cleandoc(docs)
 	return NON_LINK_AT_SIGN.sub('@\N{zero width space}', docs)
 
 @command
@@ -185,7 +188,7 @@ def help(notif, command=None, /, *_):
 		if not docs:
 			return reply(notif, f'{command}: no help given.')
 
-		reply(notif, sanitize_docs(docs.format(username=me['acct'])))
+		reply(notif, prepare_docs(docs))
 	else:
 		topics = []
 		for func in commands.values():

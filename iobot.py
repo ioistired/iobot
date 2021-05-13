@@ -111,6 +111,7 @@ def this_your_admin(notif, *_):
 	"""dankwraith dunks on your image
 
 	Upload an image to use. If you don't, I'll pick the most recent image sent in this thread.
+	Source: https://monads.online/@dankwraith/106178429002959039
 	"""
 	attach = get_image(notif['status'])
 	if not attach:

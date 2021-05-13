@@ -112,7 +112,16 @@ def this_your_admin(notif, *_):
 	):
 		outf = io.BytesIO()
 		out.save(outf)
-		media = pleroma.media_post(outf.getbuffer(), mime_type='image/png', file_name='this_your_admin.png')
+		media = pleroma.media_post(
+			outf.getbuffer(),
+			mime_type='image/png',
+			file_name='this_your_admin.png',
+			description=(
+				f'@dankwraith@monads.online says: "this your admin?" in response to an image:\n'
+				+ attach["description"]
+				+ '\n@dankwraith replies: how are you clowns not just ashamed of yourselves 24/7'
+			)
+		)
 		reply(notif, '', media_ids=[media])
 
 @command

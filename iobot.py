@@ -29,7 +29,7 @@ def reply(notif, *args, **kwargs):
 
 def handle(notif):
 	content = notif['status']['pleroma']['content']['text/plain']
-	before, mention, command = content.partition('@iobot')
+	before, mention, command = content.partition('@' + me['acct'])
 	command = command.strip()
 	command_name, *command_args = command.split()
 	try:

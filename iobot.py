@@ -23,7 +23,13 @@ me = pleroma.me()
 
 commands = {}
 def command(func):
-	commands[func.__name__.replace('_', '-')] = func
+	command_name = func.__name__.replace('_', '-')
+	commands[command_name] = func
+	func.command_name = command_name
+	if func.__doc__:
+		func.short_help = func.__doc__.partition('\n')[0]
+	else:
+		func.short_help = None
 	return func
 
 def reply(notif, status, **kwargs):
@@ -102,6 +108,10 @@ def ping(notif, *_):
 
 @command
 def this_your_admin(notif, *_):
+	"""dankwraith dunks on your image
+
+	Upload an image to use. If you don't, I'll pick the most recent image sent in this thread.
+	"""
 	attach = get_image(notif['status'])
 	if not attach:
 		return reply(notif, 'Error: no image found attached to your message or in this thread.')
@@ -127,6 +137,10 @@ def this_your_admin(notif, *_):
 
 @command
 def timecard(notif, *args):
+	"""Generates a spongebob-style timecard using your text.
+
+	Each argument is a line. Please quote multi-word arguments.
+	"""
 	outf = io.BytesIO()
 	_timecard(args, file=outf)
 	media = pleroma.media_post(
@@ -136,6 +150,49 @@ def timecard(notif, *args):
 		description='\n'.join(args),
 	)
 	reply(notif, '', media_ids=[media])
+
+@command
+def command_format(*_):
+	"""More help with summoning the bot.
+
+	For commands that take more than one argument, you can pass one argument with spaces using quotes:
+	@{username} timecard one "dance party" later
+
+	To summon the bot, just mention it: @{username} ping
+	If you're replying to someone, just add the bot's tag: @joe @karim @{username} ping
+	If you want to say something and invoke a command in the same message, use two blocks of pings:
+
+	@joe @karim Yeah I agree
+	@{username} this-your-admin
+	"""
+
+@command
+def help(notif, command=None, /, *_):
+	"""Shows this message. Pass the name of a command for more info."""
+	if command:
+		try:
+			docs = commands[command].__doc__
+		except KeyError:
+			return reply(notif, f'Command {command} not found.')
+
+		if not docs:
+			return reply(notif, f'{command}: no help given.')
+
+		reply(notif, docs.format(username=me['acct']).replace('@', '@\N{zero width space}'))
+	else:
+		topics = []
+		for func in commands.values():
+			if func.short_help:
+				topics.append(f'• {func.command_name} — {func.short_help}')
+			else:
+				topics.append(f'• {func.command_name}')
+
+		reply(
+			notif,
+			'I am a basic bot created by https://csdisaster.club/io. I only run when summoned. '
+			'Available commands/help topics:\n\n'
+			+ '\n'.join(topics)
+		)
 
 def main():
 	print('Logged in as:', '@' + me['acct'])

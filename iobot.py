@@ -76,12 +76,13 @@ def parse_mentions(content):
 	in_mentions_block = False
 	has_me = False
 	for word in shlex.split(html_to_plain(content)):
+		# only match the first block of mentions that pings us
 		if command_content and not in_mentions_block and word.startswith('@'):
 			break
 		if word == '@' + me['acct']:
 			has_me = True
 			in_mentions_block = True
-		if word.startswith('@') and not in_mentions_block and word != '@' + me['acct']:
+		elif word.startswith('@') and not in_mentions_block:
 			in_mentions_block = True
 			has_me = False
 		if not word.startswith('@'):
@@ -91,18 +92,18 @@ def parse_mentions(content):
 
 	return command_content
 
-def handle(notif):
+def dispatch(notif):
 	try:
 		command_name, *command_args = parse_mentions(notif['status']['content'])
 	except ValueError:
 		return
 
 	try:
-		command_handler = commands[command_name]
+		handler = commands[command_name]
 	except KeyError:
 		return
 
-	command_handler(notif, *command_args)
+	handler(notif, *command_args)
 
 @command
 def ping(notif, *_):
@@ -154,6 +155,7 @@ def timecard(notif, *args):
 	)
 	reply(notif, '', media_ids=[media])
 
+# this is just defined for the help topic
 @command
 def command_format(*_):
 	"""More help with summoning the bot.
@@ -169,6 +171,8 @@ def command_format(*_):
 	@{username} this-your-admin
 	"""
 
+# matches @ not preceded by /
+# this allows linking to toots in help messages
 NON_LINK_AT_SIGN = re.compile('(?<!/)@')
 
 def prepare_docs(docs):
@@ -209,7 +213,7 @@ def main():
 	while True:
 		notifs = pleroma.notifications(mentions_only=True)
 		for notif in notifs:
-			handle(notif)
+			dispatch(notif)
 		pleroma.notifications_clear()
 
 		time.sleep(1)

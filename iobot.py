@@ -5,6 +5,8 @@ import traceback
 import mastodon
 import time
 import requests
+import wand.image
+import io
 
 from memes.this_your_admin import this_your_admin as _this_your_admin
 
@@ -40,6 +42,25 @@ def handle(notif):
 @command
 def ping(notif, *_):
 	reply(notif, 'pong')
+
+@command
+def this_your_admin(notif, *_):
+	attachments = notif['status']['media_attachments']
+	if len(attachments) != 1:
+		return reply(notif, 'Error: please attach exactly one image file.')
+
+	attach = attachments[0]
+	if not attach['pleroma']['mime_type'].startswith('image/'):
+		return reply(notif, 'Error: an image file is required, got ' + attach['pleroma']['mime_type'])
+	with (
+		requests.get(attach['url']) as resp,
+		wand.image.Image(blob=resp.content) as img,
+		_this_your_admin(img) as out,
+	):
+		outf = io.BytesIO()
+		out.save(outf)
+		media = pleroma.media_post(outf.getbuffer(), mime_type='image/png', file_name='this_your_admin.png')
+		reply(notif, '', media_ids=[media])
 
 def main():
 	while True:

@@ -1,5 +1,5 @@
 pleroma-bot-lib @ git+https://github.com/ioistired/pleroma-bot-lib.git
 Wand
-pytoml
+pytomlpp
 timecard-cli @ git+https://github.com/ioistired/timecard-cli.git
 beautifulsoup4

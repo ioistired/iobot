@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import contextlib
-import pytoml as toml
+import pytomlpp as toml
 import requests
 import wand.image
 import io

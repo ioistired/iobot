@@ -155,9 +155,9 @@ def timecard(notif, *args):
 	)
 	reply(notif, '', media_ids=[media])
 
-# this is just defined for the help topic
+# this is defined as a help topic
 @command
-def command_format(*_):
+def command_format(notif, *_):
 	"""More help with summoning the bot.
 
 	For commands that take more than one argument, you can pass one argument with spaces using quotes:
@@ -170,6 +170,7 @@ def command_format(*_):
 	@joe @karim Yeah I agree
 	@{username} this-your-admin
 	"""
+	help(notif, 'command-format')
 
 # matches @ not preceded by /
 # this allows linking to toots in help messages

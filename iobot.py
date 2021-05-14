@@ -73,7 +73,7 @@ def command_format(notif, *_):
 	"""More help with summoning the bot.
 
 	For commands that take more than one argument, you can pass one argument with spaces using quotes:
-	@{username} timecard one "dance party" later
+	@{username} timecard one “dance party” later
 
 	To summon the bot, just mention it: @{username} ping
 	If you're replying to someone, just add the bot's tag: @joe @karim @{username} ping
